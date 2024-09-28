@@ -1,50 +1,45 @@
-import xml.etree.ElementTree as ET
 import csv
+import xmltodict
 
-def flatten_record(record):
-    """ Flatten a nested XML record into a flat dictionary. """
-    flat_record = {}
-    
-    def flatten_element(element, parent_key=''):
-        """ Recursive function to flatten nested XML elements. """
-        for child in element:
-            key = f"{parent_key}{child.tag}" if parent_key else child.tag
-            if len(child):
-                flatten_element(child, key + '_')
-            else:
-                flat_record[key] = child.text
-    
-    flatten_element(record)
-    return flat_record
+with open("sample.xml", 'r') as file:
+    filedata = file.read()
 
-def xml_to_csv(xml_file, csv_file):
-    # Parse the XML file
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-    
-    # Collect headers and records
-    headers = set()
-    records = []
-    
-    for record in root.findall('record'):
-        flat_record = flatten_record(record)
-        headers.update(flat_record.keys())
-        records.append(flat_record)
-    
-    headers = sorted(headers)
-    
-    # Write data to CSV file
-    with open(csv_file, 'w', newline='', encoding='utf-8') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(headers)
-        for record in records:
-            row = [record.get(header, '') for header in headers]
-            csvwriter.writerow(row)
+data_dict = xmltodict.parse(filedata)
+employee_data_list = [dict(x) for x in data_dict["employees"]["employee"]]
+HEADERS = ['name', 'role' ,'age']
+rows = []
 
-# Define the XML and CSV file paths
-xml_file = input("Enter the path of your XML file: ")
-csv_file = input("Enter the name of the CSV file (without extension): ") + ".csv"
+for employee in employee_data_list:
+    name = employee["name"]
+    role= employee["role"]
+    age = employee["age"]
+    rows.append([name,role,age])
 
-# Convert XML to CSV
-xml_to_csv(xml_file, csv_file)
-print(f'Converted {xml_file} to {csv_file}')
+with open('employee_data.csv', 'w',newline="") as f:
+    write = csv.writer(f)
+    write.writerow(HEADERS)
+    write.writerows(rows)
+
+
+<employees>
+   <employee>
+      <name>Carolina</name>
+        <role>Data Engineer</role>
+        <age>24</age>
+    </employee>
+    <employee>
+      <name>Roosaka</name>
+        <role>Data Scientist</role>
+        <age>27</age>
+    </employee>
+    <employee>
+      <name>Kumar</name>
+        <role>Machine Learning Engineer</role>
+        <age>31</age>
+    </employee>
+    <employee>
+      <name>Vijay</name>
+        <role>Devops Engineer</role>
+        <age>26</age>
+    </employee>
+</employees>
